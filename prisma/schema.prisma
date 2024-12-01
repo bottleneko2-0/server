@@ -15,29 +15,29 @@ model add_article {
 }
 
 model users_test {
-  id               Int                @unique(map: "id_UNIQUE") @default(autoincrement())
-  username         String?            @db.VarChar(50)
-  email            String             @unique @db.VarChar(100)
-  password         String             @db.VarChar(255)
-  google_auth      Int?               @db.TinyInt
-  comment_reaction comment_reaction[]
+  id          Int     @unique(map: "id_UNIQUE") @default(autoincrement())
+  username    String? @db.VarChar(50)
+  email       String  @unique @db.VarChar(100)
+  password    String  @db.VarChar(255)
+  google_auth Int?    @db.TinyInt
 }
 
 model comment_area {
-  id                  Int                @id @unique(map: "id_UNIQUE") @default(autoincrement())
-  username            String             @db.VarChar(45)
-  created_at          DateTime           @db.Timestamp(0)
-  content             String             @db.Text
-  like_count          Int                @default(0)
-  profile_picture_url String             @db.VarChar(255)
-  accountId           Int?
-  account_page        account_page?      @relation(fields: [accountId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_account_id")
-  comment_reaction    comment_reaction[]
+  id                     Int                      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  username               String                   @db.VarChar(45)
+  created_at             DateTime                 @db.Timestamp(0)
+  content                String                   @db.Text
+  like_count             Int                      @default(0)
+  profile_picture_url    String                   @db.VarChar(255)
+  accountId              Int?
+  account_page           account_page?            @relation(fields: [accountId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_account_id")
+  user_comment_reactions user_comment_reactions[]
 
   @@index([accountId], map: "fk_account_id")
 }
 
 model deck_list {
+  id               Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
   deck_id          String    @unique(map: "deck_id_UNIQUE") @db.VarChar(5)
   user_email       String    @db.VarChar(45)
   deck_name        String    @db.VarChar(45)
@@ -72,36 +72,27 @@ model users {
 }
 
 model account_page {
-  id                  Int            @id @unique(map: "id_UNIQUE") @default(autoincrement())
-  username            String         @unique @db.VarChar(45)
-  profile_picture_url String         @db.VarChar(255)
-  comment_area        comment_area[]
+  id                     Int                      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  username               String                   @unique @db.VarChar(45)
+  profile_picture_url    String                   @db.VarChar(255)
+  comment_area           comment_area[]
+  user_comment_reactions user_comment_reactions[]
 }
 
-model comment_reaction {
-  id           Int          @unique(map: "id_UNIQUE")
-  user_id      Int          @default(autoincrement())
+model user_comment_reactions {
+  id           Int          @unique(map: "id_UNIQUE") @default(autoincrement())
+  user_id      Int
   message_id   Int
-  liked        Int?         @default(0) @db.TinyInt
-  bad_liked    Int?         @db.TinyInt
+  liked        Boolean
+  bad_liked    Boolean
   comment_area comment_area @relation(fields: [message_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "message_id")
-  users_test   users_test   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_id")
+  account_page account_page @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "user_id")
 
-  @@id([user_id, id, message_id])
+  @@id([user_id, message_id])
   @@index([message_id], map: "message_id")
 }
 
 enum user_auths_auth_type {
   local
   oauth
-}
-
-model deck_list {
-  deck_id          String    @unique(map: "deck_id_UNIQUE") @db.VarChar(5)
-  user_email       String    @db.VarChar(45)
-  deck_name        String    @db.VarChar(45)
-  deck             String    @db.VarChar(255)
-  deck_cover       String    @db.VarChar(255)
-  deck_description String    @db.VarChar(255)
-  build_time       DateTime? @default(now()) @db.DateTime(0)
 }
